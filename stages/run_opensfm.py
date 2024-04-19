@@ -65,32 +65,32 @@ class ODMOpenSfMStage(types.ODM_Stage):
             # being replaced below. It's an isolated use case.
 
             octx.export_stats(self.rerun())
-        
+
         self.update_progress(75)
 
         # We now switch to a geographic CRS
         if reconstruction.is_georeferenced() and (not io.file_exists(tree.opensfm_topocentric_reconstruction) or self.rerun()):
-            octx.run('export_geocoords --reconstruction --proj "%s" --offset-x %s --offset-y %s' % 
+            octx.run('export_geocoords --reconstruction --proj "%s" --offset-x %s --offset-y %s' %
                 (reconstruction.georef.proj4(), reconstruction.georef.utm_east_offset, reconstruction.georef.utm_north_offset))
             shutil.move(tree.opensfm_reconstruction, tree.opensfm_topocentric_reconstruction)
             shutil.move(tree.opensfm_geocoords_reconstruction, tree.opensfm_reconstruction)
         else:
             log.ODM_WARNING("Will skip exporting %s" % tree.opensfm_geocoords_reconstruction)
-        
+
         self.update_progress(80)
 
         updated_config_flag_file = octx.path('updated_config.txt')
 
         # Make sure it's capped by the depthmap-resolution arg,
-        # since the undistorted images are used for MVS
-        outputs['undist_image_max_size'] = max(
-            gsd.image_max_size(photos, args.orthophoto_resolution, tree.opensfm_reconstruction, ignore_gsd=args.ignore_gsd, has_gcp=reconstruction.has_gcp()),
-            get_depthmap_resolution(args, photos)
-        )
+        # since the undistorted ima ges are used for MVS
+        # outputs['undist_image_max_size'] = max(
+        #     gsd.image_max_size(photos, args.orthophoto_resolution, tree.opensfm_reconstruction, ignore_gsd=args.ignore_gsd, has_gcp=reconstruction.has_gcp()),
+        #     get_depthmap_resolution(args, photos)
+        # )
 
-        if not io.file_exists(updated_config_flag_file) or self.rerun():
-            octx.update_config({'undistorted_image_max_size': outputs['undist_image_max_size']})
-            octx.touch(updated_config_flag_file)
+        # if not io.file_exists(updated_config_flag_file) or self.rerun():
+        #     octx.update_config({'undistorted_image_max_size': outputs['undist_image_max_size']})
+        #     octx.touch(updated_config_flag_file)
 
         # Undistorted images will be used for texturing / MVS
 
